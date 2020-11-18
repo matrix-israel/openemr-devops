@@ -1,6 +1,6 @@
 FROM alpine:3.12
 
-#Install dependencies
+#Install dependencies and fix issue in apache
 RUN apk --no-cache upgrade
 RUN apk add --no-cache \
     apache2 apache2-ssl git php7 php7-tokenizer php7-ctype php7-session php7-apache2 \
@@ -9,8 +9,9 @@ RUN apk add --no-cache \
     php7-mysqli php7-sockets php7-xmlreader php7-redis php7-simplexml php7-xmlwriter php7-phar php7-fileinfo \
     php7-sodium php7-calendar \
     perl mysql-client tar curl imagemagick npm \
-    python3 openssl py-pip openssl-dev dcron \
-    shadow
+    python2 python3 openssl py-pip openssl-dev dcron \
+    rsync shadow \
+    && sed -i 's/^Listen 80$/Listen 0.0.0.0:80/' /etc/apache2/httpd.conf
 # Needed to ensure permissions work across shared volumes with openemr, nginx, and php-fpm dockers
 RUN usermod -u 1000 apache
 # Install composer for openemr package building
@@ -59,6 +60,12 @@ RUN chmod 500 \
     /root/fsupgrade-1.sh
 #fix issue with apache2 dying prematurely
 RUN mkdir -p /run/apache2
+#Copy dev tools library to root
+COPY utilities/devtoolsLibrary.source /root/
+#Ensure swarm/orchestration pieces are available if needed
+RUN mkdir /swarm-pieces \
+    && rsync --owner --group --perms --delete --recursive --links /etc/ssl /swarm-pieces/ \
+    && rsync --owner --group --perms --delete --recursive --links /var/www/localhost/htdocs/openemr/sites /swarm-pieces/
 #go
 CMD [ "./run_openemr.sh" ]
 
