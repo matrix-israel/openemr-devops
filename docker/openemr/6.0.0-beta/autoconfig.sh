@@ -167,7 +167,7 @@ if [ -f /etc/docker-leader ] ||
     CONFIG=$(php -r "require_once('/var/www/localhost/htdocs/openemr/sites/default/sqlconf.php'); echo \$config;")
     if [ "$CONFIG" == "0" ] &&
        [ "$MYSQL_HOST" != "" ] &&
-       [ "$MYSQL_ROOT_PASS" != "" ] &&
+       [ "$MYSQL_PASS" != "" ] &&
        [ "$MANUAL_SETUP" != "yes" ]; then
 
         echo "Running quick setup!"
